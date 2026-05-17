@@ -49,6 +49,84 @@ class CarDetailScreen extends StatelessWidget {
     );
   }
 
+  Widget bulletList(List<String> items) {
+    if (items.isEmpty) {
+      return const Card(
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Text("Bilgi bulunmuyor"),
+        ),
+      );
+    }
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: items
+              .map(
+                (item) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 5),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text("• "),
+                      Expanded(child: Text(item)),
+                    ],
+                  ),
+                ),
+              )
+              .toList(),
+        ),
+      ),
+    );
+  }
+
+  Widget equipmentList() {
+    final labels = {
+      "multimedia": "Multimedya",
+      "appleCarPlay": "Apple CarPlay",
+      "androidAuto": "Android Auto",
+      "sunroof": "Sunroof",
+      "leatherSeat": "Deri Koltuk",
+      "adaptiveCruiseControl": "Adaptif Hız Sabitleyici",
+      "laneAssist": "Şerit Takip",
+      "blindSpotWarning": "Kör Nokta Uyarı",
+      "rearCamera": "Geri Görüş Kamerası",
+      "parkingSensor": "Park Sensörü",
+      "digitalDisplay": "Dijital Gösterge",
+      "automaticClimate": "Otomatik Klima",
+    };
+
+    final entries = labels.entries.toList();
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: entries.map((entry) {
+            final hasFeature = car.equipment[entry.key] == true;
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Row(
+                children: [
+                  Icon(
+                    hasFeature ? Icons.check_circle : Icons.cancel,
+                    color: hasFeature ? Colors.green : Colors.red,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(child: Text(entry.value)),
+                ],
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final familyText = car.familyFriendly ? "Uygun" : "Uygun değil";
@@ -97,6 +175,7 @@ class CarDetailScreen extends StatelessWidget {
                 ),
               ),
             ),
+
             sectionTitle("Temel Bilgiler"),
             Card(
               child: Padding(
@@ -118,6 +197,10 @@ class CarDetailScreen extends StatelessWidget {
                 ),
               ),
             ),
+
+            sectionTitle("Donanım"),
+            equipmentList(),
+
             sectionTitle("Kullanım Uygunluğu"),
             scoreCard(
               "Konfor",
@@ -132,6 +215,7 @@ class CarDetailScreen extends StatelessWidget {
               Icons.location_city,
             ),
             scoreCard("Uzun Yol", car.longRoadScore, Icons.route),
+
             Card(
               child: ListTile(
                 leading: const Icon(Icons.family_restroom, color: Colors.blue),
@@ -142,6 +226,19 @@ class CarDetailScreen extends StatelessWidget {
                 ),
               ),
             ),
+
+            sectionTitle("Artılar"),
+            bulletList(car.pros),
+
+            sectionTitle("Eksiler"),
+            bulletList(car.cons),
+
+            sectionTitle("Yaygın Kullanıcı Şikayetleri"),
+            bulletList(car.commonComplaints),
+
+            sectionTitle("Önerilen Kullanım Tipi"),
+            bulletList(car.recommendedUsage),
+
             sectionTitle("Piyasa ve Maliyet"),
             scoreCard(
               "Türkiye'de Tutulma",

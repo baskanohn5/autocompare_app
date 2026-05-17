@@ -10,7 +10,6 @@ class CarModel {
 
   final int minPrice;
   final int maxPrice;
-
   final double averageFuel;
 
   final int marketPopularity;
@@ -23,14 +22,17 @@ class CarModel {
   final int comfortScore;
   final int performanceScore;
   final int safetyScore;
-
   final bool familyFriendly;
-
   final int cityUseScore;
   final int longRoadScore;
-
   final int horsePower;
   final int trunkVolume;
+
+  final Map<String, dynamic> equipment;
+  final List<String> pros;
+  final List<String> cons;
+  final List<String> commonComplaints;
+  final List<String> recommendedUsage;
 
   CarModel({
     required this.id,
@@ -58,6 +60,11 @@ class CarModel {
     required this.longRoadScore,
     required this.horsePower,
     required this.trunkVolume,
+    required this.equipment,
+    required this.pros,
+    required this.cons,
+    required this.commonComplaints,
+    required this.recommendedUsage,
   });
 
   factory CarModel.fromJson(Map<String, dynamic> json) {
@@ -70,30 +77,28 @@ class CarModel {
       fuelType: json["fuelType"] ?? "",
       transmission: json["transmission"] ?? "",
       bodyType: json["bodyType"] ?? "",
-
       minPrice: json["minPrice"] ?? 0,
       maxPrice: json["maxPrice"] ?? 0,
-
       averageFuel: ((json["averageFuel"] ?? 0) as num).toDouble(),
-
       marketPopularity: json["marketPopularity"] ?? 0,
       sparePartAvailability: json["sparePartAvailability"] ?? 0,
       maintenanceCost: json["maintenanceCost"] ?? 0,
       secondHandValue: json["secondHandValue"] ?? 0,
       chronicProblemScore: json["chronicProblemScore"] ?? 0,
-
       segment: json["segment"] ?? "Bilinmiyor",
       comfortScore: json["comfortScore"] ?? 0,
       performanceScore: json["performanceScore"] ?? 0,
       safetyScore: json["safetyScore"] ?? 0,
-
       familyFriendly: json["familyFriendly"] ?? false,
-
       cityUseScore: json["cityUseScore"] ?? 0,
       longRoadScore: json["longRoadScore"] ?? 0,
-
       horsePower: json["horsePower"] ?? 0,
       trunkVolume: json["trunkVolume"] ?? 0,
+      equipment: Map<String, dynamic>.from(json["equipment"] ?? {}),
+      pros: List<String>.from(json["pros"] ?? []),
+      cons: List<String>.from(json["cons"] ?? []),
+      commonComplaints: List<String>.from(json["commonComplaints"] ?? []),
+      recommendedUsage: List<String>.from(json["recommendedUsage"] ?? []),
     );
   }
 }
