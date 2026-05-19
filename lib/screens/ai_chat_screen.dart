@@ -1,26 +1,32 @@
 import "package:flutter/material.dart";
-
+import "package:flutter_animate/flutter_animate.dart";
 import "../services/ai_service.dart";
 
 class AiChatScreen extends StatefulWidget {
   const AiChatScreen({super.key});
 
   @override
-  State<AiChatScreen> createState() => _AiChatScreenState();
+  State<AiChatScreen> createState() =>
+      _AiChatScreenState();
 }
 
-class _AiChatScreenState extends State<AiChatScreen> {
+class _AiChatScreenState
+    extends State<AiChatScreen> {
   final AiService aiService = AiService();
 
   final TextEditingController messageController =
       TextEditingController();
+
+  final ScrollController scrollController =
+      ScrollController();
 
   final List<Map<String, dynamic>> messages = [];
 
   bool isLoading = false;
 
   Future<void> sendMessage() async {
-    final message = messageController.text.trim();
+    final message =
+        messageController.text.trim();
 
     if (message.isEmpty) return;
 
@@ -35,8 +41,11 @@ class _AiChatScreenState extends State<AiChatScreen> {
 
     messageController.clear();
 
+    scrollToBottom();
+
     try {
-      final response = await aiService.sendMessage(message);
+      final response =
+          await aiService.sendMessage(message);
 
       setState(() {
         messages.add({
@@ -44,6 +53,8 @@ class _AiChatScreenState extends State<AiChatScreen> {
           "message": response,
         });
       });
+
+      scrollToBottom();
     } catch (error) {
       setState(() {
         messages.add({
@@ -51,6 +62,8 @@ class _AiChatScreenState extends State<AiChatScreen> {
           "message": error.toString(),
         });
       });
+
+      scrollToBottom();
     } finally {
       setState(() {
         isLoading = false;
@@ -58,34 +71,440 @@ class _AiChatScreenState extends State<AiChatScreen> {
     }
   }
 
+  void scrollToBottom() {
+    Future.delayed(
+      const Duration(milliseconds: 200),
+      () {
+        if (!scrollController.hasClients) return;
+
+        scrollController.animateTo(
+          scrollController.position.maxScrollExtent,
+          duration:
+              const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      },
+    );
+  }
+
+  Widget welcomeCard() {
+    return Container(
+      margin: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28),
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xFF020617),
+            Color(0xFF1E3A8A),
+            Color(0xFF2563EB),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blue.withOpacity(0.35),
+            blurRadius: 28,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 95,
+            height: 95,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: const LinearGradient(
+                colors: [
+                  Color(0xFF38BDF8),
+                  Color(0xFF2563EB),
+                ],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.cyan.withOpacity(0.45),
+                  blurRadius: 25,
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.auto_awesome,
+              color: Colors.white,
+              size: 52,
+            ),
+          ),
+
+          const SizedBox(height: 18),
+
+          const Text(
+            "AI Araç Danışmanı",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 28,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+
+          const SizedBox(height: 10),
+          const SizedBox(height: 22),
+
+Wrap(
+  spacing: 10,
+  runSpacing: 10,
+  alignment: WrapAlignment.center,
+  children: [
+    quickPrompt(
+      "En az yakan SUV öner",
+      Icons.local_gas_station,
+    ),
+
+    quickPrompt(
+      "1 milyon altı aile aracı",
+      Icons.family_restroom,
+    ),
+
+    quickPrompt(
+      "Uzun yol için sedan öner",
+      Icons.route,
+    ),
+
+    quickPrompt(
+      "En sorunsuz dizel araçlar",
+      Icons.build,
+    ),
+
+    quickPrompt(
+      "Öğrenci için ekonomik araç",
+      Icons.school,
+    ),
+  ],
+),
+
+          const Text(
+            "Araç karşılaştır, ikinci el değerlendirmesi al ve yapay zekadan profesyonel tavsiye iste.",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Color(0xFFCBD5E1),
+              height: 1.5,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  Widget quickPrompt(
+  String text,
+  IconData icon,
+) {
+  return GestureDetector(
+    onTap: () {
+      messageController.text = text;
+      sendMessage();
+    },
+    child: Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 12,
+      ),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xFF1E293B),
+            Color(0xFF0F172A),
+          ],
+        ),
+        border: Border.all(
+          color: const Color(0xFF334155),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.22),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            color: const Color(0xFF60A5FA),
+            size: 18,
+          ),
+
+          const SizedBox(width: 8),
+
+          Flexible(
+            child: Text(
+              text,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
   Widget messageBubble({
     required bool isUser,
     required String message,
   }) {
     return Align(
-      alignment:
-          isUser ? Alignment.centerRight : Alignment.centerLeft,
+      alignment: isUser
+          ? Alignment.centerRight
+          : Alignment.centerLeft,
       child: Container(
         margin: const EdgeInsets.symmetric(
-          vertical: 6,
+          vertical: 7,
         ),
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(16),
         constraints: const BoxConstraints(
-          maxWidth: 320,
+          maxWidth: 340,
         ),
         decoration: BoxDecoration(
-          color: isUser
-              ? Colors.blue
-              : Colors.grey.shade300,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Text(
-          message,
-          style: TextStyle(
-            color: isUser
-                ? Colors.white
-                : Colors.black,
+          borderRadius: BorderRadius.only(
+            topLeft:
+                const Radius.circular(22),
+            topRight:
+                const Radius.circular(22),
+            bottomLeft: Radius.circular(
+              isUser ? 22 : 6,
+            ),
+            bottomRight: Radius.circular(
+              isUser ? 6 : 22,
+            ),
           ),
+          gradient: isUser
+              ? const LinearGradient(
+                  colors: [
+                    Color(0xFF2563EB),
+                    Color(0xFF1D4ED8),
+                  ],
+                )
+              : const LinearGradient(
+                  colors: [
+                    Color(0xFF1E293B),
+                    Color(0xFF0F172A),
+                  ],
+                ),
+          border: Border.all(
+            color: isUser
+                ? Colors.blue.withOpacity(0.30)
+                : const Color(0xFF334155),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: isUser
+                  ? Colors.blue.withOpacity(0.20)
+                  : Colors.black.withOpacity(0.25),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment:
+              CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircleAvatar(
+                  radius: 13,
+                  backgroundColor:
+                      Colors.white.withOpacity(0.14),
+                  child: Icon(
+                    isUser
+                        ? Icons.person
+                        : Icons.smart_toy,
+                    color: Colors.white,
+                    size: 15,
+                  ),
+                ),
+
+                const SizedBox(width: 8),
+
+                Text(
+                  isUser
+                      ? "Sen"
+                      : "AutoCompare AI",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 12),
+
+            Text(
+              message,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                height: 1.55,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget typingLoader() {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        margin: const EdgeInsets.symmetric(
+          vertical: 8,
+        ),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          gradient: const LinearGradient(
+            colors: [
+              Color(0xFF1E293B),
+              Color(0xFF0F172A),
+            ],
+          ),
+          border: Border.all(
+            color: const Color(0xFF334155),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Color(0xFF60A5FA),
+              ),
+            ),
+
+            const SizedBox(width: 12),
+
+            Text(
+              "AI düşünüyor...",
+              style: TextStyle(
+                color:
+                    Colors.white.withOpacity(0.85),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget inputArea() {
+    return SafeArea(
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: const Color(0xFF020617),
+          border: Border(
+            top: BorderSide(
+              color: Colors.white.withOpacity(0.06),
+            ),
+          ),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius:
+                      BorderRadius.circular(22),
+                  gradient: const LinearGradient(
+                    colors: [
+                      Color(0xFF1E293B),
+                      Color(0xFF0F172A),
+                    ],
+                  ),
+                  border: Border.all(
+                    color: const Color(0xFF334155),
+                  ),
+                ),
+                child: TextField(
+                  controller: messageController,
+                  style: const TextStyle(
+                    color: Colors.white,
+                  ),
+                  decoration: InputDecoration(
+                    hintText:
+                        "Araç hakkında soru sor...",
+                    hintStyle: TextStyle(
+                      color:
+                          Colors.white.withOpacity(
+                        0.45,
+                      ),
+                    ),
+                    border: InputBorder.none,
+                    contentPadding:
+                        const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 15,
+                    ),
+                  ),
+                  onSubmitted: (_) {
+                    if (!isLoading) {
+                      sendMessage();
+                    }
+                  },
+                ),
+              ),
+            ),
+
+            const SizedBox(width: 12),
+
+            GestureDetector(
+              onTap:
+                  isLoading ? null : sendMessage,
+              child: Container(
+                width: 58,
+                height: 58,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: const LinearGradient(
+                    colors: [
+                      Color(0xFF2563EB),
+                      Color(0xFF06B6D4),
+                    ],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color:
+                          Colors.blue.withOpacity(
+                        0.35,
+                      ),
+                      blurRadius: 18,
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.send_rounded,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -94,74 +513,64 @@ class _AiChatScreenState extends State<AiChatScreen> {
   @override
   void dispose() {
     messageController.dispose();
+    scrollController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF020617),
+
       appBar: AppBar(
-        title: const Text("AI Araç Danışmanı"),
+        elevation: 0,
+        centerTitle: true,
+        backgroundColor: const Color(0xFF020617),
+        title: const Text(
+          "AutoCompare AI",
+          style: TextStyle(
+            fontWeight: FontWeight.w900,
+          ),
+        ),
       ),
+
       body: Column(
         children: [
+          if (messages.isEmpty)
+            welcomeCard(),
+
           Expanded(
-            child: messages.isEmpty
-                ? const Center(
-                    child: Text(
-                      "AI araç danışmanına soru sor",
-                    ),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: messages.length,
-                    itemBuilder: (context, index) {
-                      final item = messages[index];
+            child: ListView.builder(
+              controller: scrollController,
+              padding: const EdgeInsets.all(16),
+              itemCount: messages.length +
+                  (isLoading ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (isLoading &&
+                    index == messages.length) {
+                  return typingLoader();
+                }
 
-                      return messageBubble(
-                        isUser: item["isUser"],
-                        message: item["message"],
-                      );
-                    },
-                  ),
-          ),
+                final item = messages[index];
 
-          if (isLoading)
-            const Padding(
-              padding: EdgeInsets.only(bottom: 8),
-              child: CircularProgressIndicator(),
-            ),
-
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: messageController,
-                      decoration: const InputDecoration(
-                        hintText: "Mesaj yaz...",
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(width: 10),
-
-                  SizedBox(
-                    height: 52,
-                    child: ElevatedButton(
-                      onPressed: isLoading
-                          ? null
-                          : sendMessage,
-                      child: const Icon(Icons.send),
-                    ),
-                  ),
-                ],
-              ),
+                return messageBubble(
+  isUser: item["isUser"],
+  message: item["message"],
+)
+    .animate()
+    .fadeIn(
+      duration: const Duration(milliseconds: 350),
+    )
+    .slideY(
+      begin: 0.15,
+      end: 0,
+      duration: const Duration(milliseconds: 350),
+    );
+              },
             ),
           ),
+
+          inputArea(),
         ],
       ),
     );
