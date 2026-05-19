@@ -162,10 +162,14 @@ class _CompareScreenState extends State<CompareScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                if (result != null)
-                  CompareResultCard(
-                    result: result!,
-                  ),
+                if (result != null &&
+    selectedCar1 != null &&
+    selectedCar2 != null)
+  CompareResultCard(
+    result: result!,
+    car1: selectedCar1!,
+    car2: selectedCar2!,
+  ),
               ],
             ),
           );

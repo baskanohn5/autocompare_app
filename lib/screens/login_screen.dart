@@ -1,7 +1,9 @@
+import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/material.dart";
 
 import "../services/auth_service.dart";
 import "main_navigation_screen.dart";
+import "phone_login_screen.dart";
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -20,7 +22,65 @@ class _LoginScreenState extends State<LoginScreen> {
   bool isLoading = false;
   String? errorMessage;
 
+  String getFirebaseErrorMessage(FirebaseAuthException error) {
+    switch (error.code) {
+      case "invalid-email":
+        return "Geçerli bir e-posta adresi girin.";
+      case "user-not-found":
+      case "wrong-password":
+      case "invalid-credential":
+        return "E-posta veya şifre yanlış.";
+      case "email-already-in-use":
+        return "Bu e-posta adresi zaten kayıtlı.";
+      case "weak-password":
+        return "Şifre en az 6 karakter olmalı.";
+      case "missing-password":
+        return "Şifre alanı boş bırakılamaz.";
+      case "network-request-failed":
+        return "İnternet bağlantınızı kontrol edin.";
+      default:
+        return "İşlem başarısız oldu. Bilgilerinizi kontrol edin.";
+    }
+  }
+
+  Future<void> resetPassword() async {
+    final email = emailController.text.trim();
+
+    if (email.isEmpty) {
+      setState(() {
+        errorMessage = "Şifre sıfırlamak için e-posta adresinizi yazın.";
+      });
+      return;
+    }
+
+    try {
+      await authService.resetPassword(email: email);
+
+      setState(() {
+        errorMessage = "Şifre sıfırlama maili gönderildi.";
+      });
+    } on FirebaseAuthException catch (error) {
+      setState(() {
+        errorMessage = getFirebaseErrorMessage(error);
+      });
+    } catch (error) {
+      setState(() {
+        errorMessage = "Şifre sıfırlama işlemi başarısız oldu.";
+      });
+    }
+  }
+
   Future<void> submit() async {
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      setState(() {
+        errorMessage = "E-posta ve şifre alanları boş bırakılamaz.";
+      });
+      return;
+    }
+
     setState(() {
       isLoading = true;
       errorMessage = null;
@@ -28,33 +88,63 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       if (isLogin) {
-        await authService.login(
-          email: emailController.text.trim(),
-          password: passwordController.text.trim(),
+        final credential = await authService.login(
+          email: email,
+          password: password,
+        );
+
+        await credential.user?.reload();
+
+        final user = FirebaseAuth.instance.currentUser;
+
+        if (user != null && !user.emailVerified) {
+          await FirebaseAuth.instance.signOut();
+
+          setState(() {
+            errorMessage =
+                "E-posta doğrulanmamış. Lütfen mail adresinizi doğrulayın.";
+          });
+
+          return;
+        }
+
+        if (!mounted) return;
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const MainNavigationScreen(),
+          ),
         );
       } else {
-        await authService.register(
-          email: emailController.text.trim(),
-          password: passwordController.text.trim(),
+        final credential = await authService.register(
+          email: email,
+          password: password,
         );
+
+        await credential.user?.sendEmailVerification();
+        await FirebaseAuth.instance.signOut();
+
+        setState(() {
+          isLogin = true;
+          errorMessage =
+              "Doğrulama maili gönderildi. Lütfen mailinizi doğrulayıp giriş yapın.";
+        });
       }
-
-      if (!mounted) return;
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const MainNavigationScreen(),
-        ),
-      );
-    } catch (error) {
-  setState(() {
-    errorMessage = error.toString();
-  });
-} finally {
+    } on FirebaseAuthException catch (error) {
       setState(() {
-        isLoading = false;
+        errorMessage = getFirebaseErrorMessage(error);
       });
+    } catch (error) {
+      setState(() {
+        errorMessage = "Beklenmeyen bir hata oluştu.";
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 
@@ -85,19 +175,16 @@ class _LoginScreenState extends State<LoginScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-
                   const SizedBox(height: 20),
-
                   TextField(
                     controller: emailController,
+                    keyboardType: TextInputType.emailAddress,
                     decoration: const InputDecoration(
                       labelText: "E-posta",
                       border: OutlineInputBorder(),
                     ),
                   ),
-
                   const SizedBox(height: 12),
-
                   TextField(
                     controller: passwordController,
                     obscureText: true,
@@ -106,17 +193,17 @@ class _LoginScreenState extends State<LoginScreen> {
                       border: OutlineInputBorder(),
                     ),
                   ),
-
                   const SizedBox(height: 16),
-
                   if (errorMessage != null)
                     Text(
                       errorMessage!,
-                      style: const TextStyle(color: Colors.red),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-
                   const SizedBox(height: 16),
-
                   SizedBox(
                     width: double.infinity,
                     height: 48,
@@ -131,7 +218,24 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
-
+                  if (isLogin)
+                    TextButton(
+                      onPressed: isLoading ? null : resetPassword,
+                      child: const Text("Şifremi Unuttum"),
+                    ),
+                    TextButton.icon(
+                     onPressed: isLoading ? null
+                     : () {
+                     Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const PhoneLoginScreen(),
+            ),
+          );
+        },
+  icon: const Icon(Icons.phone_android),
+  label: const Text("Telefon ile giriş yap"),
+),
                   TextButton(
                     onPressed: () {
                       setState(() {

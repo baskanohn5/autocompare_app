@@ -17,7 +17,7 @@ class MainNavigationScreen extends StatefulWidget {
 
 class _MainNavigationScreenState
     extends State<MainNavigationScreen> {
-  int selectedIndex = 0;
+  int selectedIndex = 3;
 
   final List<Widget> screens = const [
     HomeScreen(),

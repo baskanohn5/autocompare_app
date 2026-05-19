@@ -24,24 +24,13 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Future<void> printToken(BuildContext context) async {
-    final token = await FirebaseAuth.instance.currentUser?.getIdToken();
-
-    debugPrint("TOKEN:");
-    debugPrint(token);
-
-    if (!context.mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Token console'a yazdırıldı"),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    final user = AuthService().currentUser;
+    final user = FirebaseAuth.instance.currentUser;
+
+    final userInfo = user?.email ??
+        user?.phoneNumber ??
+        "Kullanıcı bilgisi bulunamadı";
 
     return Scaffold(
       appBar: AppBar(
@@ -60,7 +49,7 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 16),
 
             Text(
-              user?.email ?? "Kullanıcı bulunamadı",
+              userInfo,
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -77,24 +66,13 @@ class ProfileScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const ChatHistoryScreen(),
+                      builder: (context) =>
+                          const ChatHistoryScreen(),
                     ),
                   );
                 },
                 icon: const Icon(Icons.history),
                 label: const Text("AI Sohbet Geçmişi"),
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton.icon(
-                onPressed: () => printToken(context),
-                icon: const Icon(Icons.key),
-                label: const Text("TOKEN AL"),
               ),
             ),
 

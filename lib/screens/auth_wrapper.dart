@@ -7,6 +7,16 @@ import "main_navigation_screen.dart";
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
 
+  bool isAllowedUser(User user) {
+    final bool isEmailUser =
+        user.email != null && user.emailVerified;
+
+    final bool isPhoneUser =
+        user.phoneNumber != null && user.phoneNumber!.isNotEmpty;
+
+    return isEmailUser || isPhoneUser;
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
@@ -20,8 +30,14 @@ class AuthWrapper extends StatelessWidget {
           );
         }
 
-        if (snapshot.hasData) {
+        final user = snapshot.data;
+
+        if (user != null && isAllowedUser(user)) {
           return const MainNavigationScreen();
+        }
+
+        if (user != null && !isAllowedUser(user)) {
+          FirebaseAuth.instance.signOut();
         }
 
         return const LoginScreen();

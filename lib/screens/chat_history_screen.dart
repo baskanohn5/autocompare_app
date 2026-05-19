@@ -1,7 +1,6 @@
 import "package:flutter/material.dart";
 
-import "../models/chat_history_model.dart";
-import "../services/chat_history_service.dart";
+import "../services/chat_service.dart";
 
 class ChatHistoryScreen extends StatefulWidget {
   const ChatHistoryScreen({super.key});
@@ -11,23 +10,26 @@ class ChatHistoryScreen extends StatefulWidget {
 }
 
 class _ChatHistoryScreenState extends State<ChatHistoryScreen> {
-  final ChatHistoryService chatHistoryService = ChatHistoryService();
+  final ChatService chatService = ChatService();
 
-  late Future<List<ChatHistoryModel>> historyFuture;
+  late Future<List<dynamic>> historyFuture;
 
   @override
   void initState() {
     super.initState();
-    historyFuture = chatHistoryService.getChatHistory();
+    historyFuture = chatService.getChatHistory();
   }
 
   Future<void> refreshHistory() async {
     setState(() {
-      historyFuture = chatHistoryService.getChatHistory();
+      historyFuture = chatService.getChatHistory();
     });
   }
 
-  Widget historyCard(ChatHistoryModel item) {
+  Widget historyCard(dynamic item) {
+    final question = item["question"] ?? "Soru bulunamadı";
+    final answer = item["answer"] ?? "Cevap bulunamadı";
+
     return Card(
       margin: const EdgeInsets.all(12),
       child: Padding(
@@ -43,7 +45,7 @@ class _ChatHistoryScreenState extends State<ChatHistoryScreen> {
               ),
             ),
             const SizedBox(height: 6),
-            Text(item.question),
+            Text(question),
             const Divider(height: 24),
             const Text(
               "AI Cevabı",
@@ -53,7 +55,7 @@ class _ChatHistoryScreenState extends State<ChatHistoryScreen> {
               ),
             ),
             const SizedBox(height: 6),
-            Text(item.answer),
+            Text(answer),
           ],
         ),
       ),
@@ -66,7 +68,7 @@ class _ChatHistoryScreenState extends State<ChatHistoryScreen> {
       appBar: AppBar(
         title: const Text("AI Sohbet Geçmişi"),
       ),
-      body: FutureBuilder<List<ChatHistoryModel>>(
+      body: FutureBuilder<List<dynamic>>(
         future: historyFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
