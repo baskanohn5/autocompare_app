@@ -1,5 +1,3 @@
-import "dart:ui";
-
 import "package:flutter/material.dart";
 
 import "ai_chat_screen.dart";
@@ -13,54 +11,56 @@ class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
 
   @override
-  State<MainNavigationScreen> createState() =>
-      _MainNavigationScreenState();
+  State<MainNavigationScreen> createState() => _MainNavigationScreenState();
 }
 
-class _MainNavigationScreenState
-    extends State<MainNavigationScreen> {
+class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int selectedIndex = 3;
 
-  final List<Widget> screens = const [
-    HomeScreen(),
-    SearchScreen(),
-    CompareScreen(),
-    AiChatScreen(),
-    FavoritesScreen(),
-    ProfileScreen(),
-  ];
+  int favoritesRefreshKey = 0;
 
   void changeTab(int index) {
     setState(() {
       selectedIndex = index;
+
+      if (index == 4) {
+        favoritesRefreshKey++;
+      }
     });
   }
 
-  Widget navItem({
-    required int index,
-    required IconData icon,
-    required String label,
-  }) {
-    final bool isActive =
-        selectedIndex == index;
+  Widget currentScreen() {
+    switch (selectedIndex) {
+      case 0:
+        return const HomeScreen();
+      case 1:
+        return const SearchScreen();
+      case 2:
+        return const CompareScreen();
+      case 3:
+        return const AiChatScreen();
+      case 4:
+        return FavoritesScreen(
+          key: ValueKey(favoritesRefreshKey),
+        );
+      case 5:
+        return const ProfileScreen();
+      default:
+        return const AiChatScreen();
+    }
+  }
+
+  Widget navItem(int index, IconData icon, String label) {
+    final isActive = selectedIndex == index;
 
     return Expanded(
-      child: GestureDetector(
+      child: InkWell(
         onTap: () => changeTab(index),
-        child: AnimatedContainer(
-          duration:
-              const Duration(milliseconds: 250),
-          margin: const EdgeInsets.symmetric(
-            horizontal: 4,
-            vertical: 8,
-          ),
-          padding: const EdgeInsets.symmetric(
-            vertical: 10,
-          ),
+        child: Container(
+          height: 62,
+          margin: const EdgeInsets.symmetric(horizontal: 3, vertical: 6),
           decoration: BoxDecoration(
-            borderRadius:
-                BorderRadius.circular(18),
-
+            borderRadius: BorderRadius.circular(18),
             gradient: isActive
                 ? const LinearGradient(
                     colors: [
@@ -69,44 +69,22 @@ class _MainNavigationScreenState
                     ],
                   )
                 : null,
-
-            color: isActive
-                ? null
-                : Colors.transparent,
-
-            boxShadow: isActive
-                ? [
-                    BoxShadow(
-                      color:
-                          Colors.blue.withOpacity(
-                        0.35,
-                      ),
-                      blurRadius: 18,
-                      offset: const Offset(0, 8),
-                    ),
-                  ]
-                : [],
           ),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 icon,
-                color: isActive
-                    ? Colors.white
-                    : const Color(0xFF94A3B8),
-                size: isActive ? 25 : 22,
+                color: isActive ? Colors.white : const Color(0xFF94A3B8),
+                size: isActive ? 24 : 21,
               ),
-
-              const SizedBox(height: 5),
-
+              const SizedBox(height: 4),
               Text(
                 label,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  color: isActive
-                      ? Colors.white
-                      : const Color(0xFF94A3B8),
-                  fontSize: 11,
+                  color: isActive ? Colors.white : const Color(0xFF94A3B8),
+                  fontSize: 10,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -117,91 +95,25 @@ class _MainNavigationScreenState
     );
   }
 
-  Widget premiumBottomBar() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        12,
-        0,
-        12,
-        14,
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(28),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(
-            sigmaX: 14,
-            sigmaY: 14,
-          ),
-          child: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 8,
-              vertical: 6,
-            ),
-            decoration: BoxDecoration(
-              borderRadius:
-                  BorderRadius.circular(28),
-              color: const Color(
-                0xFF0F172A,
-              ).withOpacity(0.92),
-              border: Border.all(
-                color: const Color(0xFF334155),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color:
-                      Colors.black.withOpacity(
-                    0.35,
-                  ),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: SafeArea(
-              top: false,
-              child: Row(
-                children: [
-                  navItem(
-                    index: 0,
-                    icon: Icons.home_rounded,
-                    label: "Ana Sayfa",
-                  ),
-
-                  navItem(
-                    index: 1,
-                    icon: Icons.search_rounded,
-                    label: "Ara",
-                  ),
-
-                  navItem(
-                    index: 2,
-                    icon:
-                        Icons.compare_arrows_rounded,
-                    label: "Karşılaştır",
-                  ),
-
-                  navItem(
-                    index: 3,
-                    icon: Icons.smart_toy_rounded,
-                    label: "AI",
-                  ),
-
-                  navItem(
-                    index: 4,
-                    icon: Icons.favorite_rounded,
-                    label: "Favoriler",
-                  ),
-
-                  navItem(
-                    index: 5,
-                    icon: Icons.person_rounded,
-                    label: "Profil",
-                  ),
-                ],
-              ),
-            ),
-          ),
+  Widget bottomBar() {
+    return Container(
+      height: 82,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: const BoxDecoration(
+        color: Color(0xFF0F172A),
+        border: Border(
+          top: BorderSide(color: Color(0xFF334155)),
         ),
+      ),
+      child: Row(
+        children: [
+          navItem(0, Icons.home_rounded, "Ana Sayfa"),
+          navItem(1, Icons.search_rounded, "Ara"),
+          navItem(2, Icons.compare_arrows_rounded, "Karşılaştır"),
+          navItem(3, Icons.smart_toy_rounded, "AI"),
+          navItem(4, Icons.favorite_rounded, "Favoriler"),
+          navItem(5, Icons.person_rounded, "Profil"),
+        ],
       ),
     );
   }
@@ -209,13 +121,15 @@ class _MainNavigationScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBody: true,
       backgroundColor: const Color(0xFF020617),
-
-      body: screens[selectedIndex],
-
-      bottomNavigationBar:
-          premiumBottomBar(),
+      body: Column(
+        children: [
+          Expanded(
+            child: currentScreen(),
+          ),
+          bottomBar(),
+        ],
+      ),
     );
   }
 }

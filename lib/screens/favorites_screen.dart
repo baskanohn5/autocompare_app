@@ -304,7 +304,7 @@ class _FavoritesScreenState
         backgroundColor: const Color(0xFF020617),
       ),
       body: FutureBuilder<List<FavoriteModel>>(
-        future: favoritesFuture,
+        future: favoriteService.getFavorites(),
         builder: (context, snapshot) {
           if (snapshot.connectionState ==
               ConnectionState.waiting) {
